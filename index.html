@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3D-Koordinatenrotation</title>
+    <style>
+
+        body {
+            font-family: monospace;
+            font-size: 1.2rem;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 2px;
+            font-size: 1.2rem;
+        }
+
+		form {
+		    text-align: center;
+    		background-color: #fff;
+    		padding: 5px;
+    		border-radius: 8px;
+    		box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    		width: 40%; /* Breite auf % der Bildschirmbreite setzen */
+    		margin: 0 auto; /* Horizontal zentrieren */
+		}
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        label_help {
+            display: block;
+            margin-top: 1px;
+            font-size: 0.8rem;
+        }
+
+		input[type="number"] {
+		    width: 25%;
+		    padding: 8px;
+		    margin-top: 5px;
+		    border: 1px solid #ccc;
+		    border-radius: 4px;
+		    text-align: center;
+		}
+/* Stilregeln für die Schaltflächen */
+		button {
+		    background-color: #007BFF;
+		    color: #fff;
+		    border: none;
+		    padding: 10px 20px;
+		    margin-top: 10px;
+		    border-radius: 4px;
+		    cursor: pointer;
+		}
+
+		button:hover {
+		    background-color: #0056b3;
+		}
+
+        p {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+/* Media Query für kleinere Bildschirme */
+@media (max-width: 300px) {
+	    form {
+	        width: 100%; /* Volle Bildschirmbreite für kleinere Bildschirme */
+		    }
+
+	    input[type="number"] {
+	        font-size: 1rem; /* Reduzierte Schriftgröße für kleinere Bildschirme */
+		    }
+		}
+    </style>
+</head>
+<body>
+    <form id="UrsprungForm">
+        <label for="ori_x">Versatz MKS zu Drehmitte X:</label>
+        <label_help>Wert positiv wenn Drehmitte in X- liegt.</label_help>
+        <input type="number" id="ori_x" name="ori_x" value=0 placeholder=“Wert positiv wenn Drehzentrum in x-“ required>
+        <br>
+        <label for="ori_y">Versatz MKS zu Drehmitte Y:</label>
+        <label_help>Wert positiv wenn Drehmitte in Y- liegt.</label_help>
+        <input type="number" id="ori_y" name="ori_y" value=0 required>
+        <br>
+        <label for="ori_z">Versatz MKS Drehmitte Z:</label>
+        <label_help>Wert positiv wenn Drehmitte in Z- liegt.</label_help>
+        <input type="number" id="ori_z" name="ori_z" value=0 required>
+    </form>
+    <form id="rotationForm">
+        <label for="x">Ursprüngliche X-Koordinate:</label>
+        <input type="number" id="x" name="x" autofocus size="3" value=0 required>
+        <br>
+        <label for="y">Ursprüngliche Y-Koordinate:</label>
+        <input type="number" id="y" name="y" value=0 required>
+        <br>
+        <label for="z">Ursprüngliche Z-Koordinate:</label>
+        <input type="number" id="z" name="z" value=0 required>
+        <br>
+        <label for="angle_a">Drehwinkel um die X-Achse (A im Uhrzeigersinn, in Grad):</label>
+        <input type="number" id="angle_a" name="angle_a" value=0 required>
+        <br>
+        <label for="angle_b">Drehwinkel um die Y-Achse (B im Uhrzeigersinn, in Grad):</label>
+        <input type="number" id="angle_b" name="angle_b" value=0 required>
+        <br>
+        <label for="angle_c">Drehwinkel um die Z-Achse (C im Uhrzeigersinn, in Grad):</label>
+        <input type="number" id="angle_c" name="angle_c" value=0 required>
+    </form>
+    <form id="result">
+		Neue X-Koordinate: 0.000
+		<br>
+		Neue Y-Koordinate: 0.000
+		<br>
+		Neue Z-Koordinate: 0.000
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        function performRotation() {
+            let ori_x = parseFloat(document.getElementById("ori_x").value);
+		    let ori_y = parseFloat(document.getElementById("ori_y").value);
+            let ori_z = parseFloat(document.getElementById("ori_z").value);
+
+            let x = parseFloat(document.getElementById("x").value);
+            let y = parseFloat(document.getElementById("y").value);
+            let z = parseFloat(document.getElementById("z").value);
+            let angle_c = parseFloat(document.getElementById("angle_c").value);
+            let angle_b = parseFloat(document.getElementById("angle_b").value);
+            let angle_a = parseFloat(document.getElementById("angle_a").value);
+
+            let pi = 3.14159265359;
+            let radians_c = angle_c * pi / 180;
+            let radians_b = angle_b * pi / 180;
+            let radians_a = angle_a * pi / 180;
+            let cz = Math.cos(radians_c);
+            let sz = Math.sin(radians_c);
+            let cb = Math.cos(radians_b);
+            let sb = Math.sin(radians_b);
+            let ca = Math.cos(radians_a);
+            let sa = Math.sin(radians_a);
+
+            let x_prime = x * (cz * cb);
+            x_prime = x_prime - y * (cz * sb * sa - sz * ca);
+            x_prime = x_prime + z * (cz * sb * ca + sz * sa);
+
+            let y_prime = x * (sz * cb);
+            y_prime = y_prime + y * (sz * sb * sa + cz * ca);
+            y_prime = y_prime - z * (sz * sb * ca - cz * sa);
+
+            let z_prime = -x * sb;
+            z_prime = z_prime + y * cb * sa;
+            z_prime = z_prime + z * cb * ca;
+
+            // Versatz MKS addieren
+			x_prime = x_prime - ori_x
+			y_prime = y_prime - ori_y
+			z_prime = z_prime - ori_z
+
+            // Runden der Ergebnisse auf 3 Dezimalstellen
+            x_prime = x_prime.toFixed(3);
+            y_prime = y_prime.toFixed(3);
+            z_prime = z_prime.toFixed(3);
+
+            document.getElementById("result").innerHTML = "Neue X-Koordinate: " + x_prime + "<br>Neue Y-Koordinate: " + y_prime + "<br>Neue Z-Koordinate: " + z_prime;
+        }
+
+			// Event-Handler für Eingabefelder, die die Berechnung bei jeder Eingabe auslösen
+			document.getElementById("ori_x").oninput = performRotation;
+			document.getElementById("ori_y").oninput = performRotation;
+			document.getElementById("ori_z").oninput = performRotation;
+
+			document.getElementById("x").oninput = performRotation;
+			document.getElementById("y").oninput = performRotation;
+			document.getElementById("z").oninput = performRotation;
+			document.getElementById("angle_a").oninput = performRotation;
+			document.getElementById("angle_b").oninput = performRotation;
+			document.getElementById("angle_c").oninput = performRotation;
+    </script>
+</body>
+</html>
